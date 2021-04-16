@@ -21,7 +21,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 COPY --from=stratum-ping-builder /home/docker/stratum-ping/main /home/docker/stratum-ping
 COPY test.py /home/docker/test.py
 COPY requirements.txt /home/docker/ 
-RUN apt-get update && apt-get install python3 python3-pip && apt-get clean all; \
+RUN apt-get update && apt-get install -y python3 python3-pip && apt-get clean all; \
     cd /home/docker; \
     pip3 install --upgrade pip; \
     pip3 install -r requirements.txt; \
