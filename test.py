@@ -37,19 +37,16 @@ class StratumPing:
 
     def get_ip(self, link, timeout=30):
         try:
-            command = '''timeout {} ./stratum-ping -c 1 {} | grep PING | sed -e "s/).*//" | sed -e "s/.*(//"'''.format(
-                timeout, link)
-            ip_address = os.popen(command).read().strip()
-            return ip_address
+            command = f'''timeout {timeout} ./stratum-ping -c 1 {link} | grep PING | sed -e "s/).*//" | sed -e "s/.*(//"'''
+
+            return os.popen(command).read().strip()
         except:
             return None
 
     def get_location(self, ip_address):
         try:
-            link = 'http://ip-api.com/json/{}?fields=country'.format(
-                ip_address)
-            res = rq.get(link)
-            if res:
+            link = f'http://ip-api.com/json/{ip_address}?fields=country'
+            if res := rq.get(link):
                 return res.json()['country']
             return None
         except:
@@ -57,11 +54,10 @@ class StratumPing:
 
     def get_latency(self, link, count=10, timeout=30):
         try:
-            command = '''timeout {} ./stratum-ping -c {} {} | tail -1 | awk 4'''.format(
-                timeout, count, link)
-            latency = os.popen(command).read(
+            command = f'''timeout {timeout} ./stratum-ping -c {count} {link} | tail -1 | awk 4'''
+
+            return os.popen(command).read(
             ).strip().split()[-2].replace(',', '')
-            return latency
         except:
             return None
 
@@ -70,18 +66,11 @@ class StratumPing:
         for pool, j in self.pools.items():
             per_pool = []
             for k in j.values():
-                temp = []
-
                 ip_address = self.get_ip(k, timeout)
                 location = self.get_location(ip_address)
                 latency = self.get_latency(k, count, timeout)
 
-                temp.append(pool)
-                temp.append(location)
-                temp.append(latency)
-                temp.append(ip_address)
-                temp.append(k)
-
+                temp = [pool, location, latency, ip_address, k]
                 per_pool.append(temp)
 
             per_pool = sorted(per_pool, key=lambda x: self.val_converter(x[2]))
